@@ -10,6 +10,7 @@ from django.views.generic.edit import UpdateView
 from django.db.models import Q
 import json
 from django.db import transaction
+from btech2008 import btech08_data
 
 def index(request):
     if request.method == 'GET':
@@ -34,12 +35,22 @@ def get_data_from_email(roll_no):
     degree = Degree.objects.get(code=degree_code)
     return {'department':department.id,'degree':degree.id,'roll_no':sno, 'year_of_admission':year_of_admission}
 
+def find_in_batch08(user_email):
+     return [ email[3] for email in btech08_data].index(user_email)
 
 def create_userinfo(request):
     if request.method == 'GET':
         try:
             user = request.user
-            data = get_data_from_email(user.username)
+            index=-1
+            try:
+                index= find_in_batch08(user.email)
+            except:
+                pass
+            if index >= 0:
+                data = get_data_from_email(btech08_data[index][2])
+            else:
+                data = get_data_from_email(user.username)
             form = getUserInfo(initial=data)
         except:
             form  = getUserInfo()
